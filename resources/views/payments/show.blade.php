@@ -4,9 +4,9 @@
 
 @section('content')
     <div class="container">
-        @if (session('alert'))
+        @if (session('success'))
             <div class="alert alert-success">
-                {{ session('alert') }}
+                {{ session('success') }}
             </div>
         @elseif (session('error'))
             <div class="alert alert-danger">

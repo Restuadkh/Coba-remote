@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Order;
+use App\Pay;
 use App\Payment;
 use Illuminate\Http\Request;
 
@@ -48,55 +49,57 @@ class PaymentController extends Controller
         $random = substr(str_shuffle($characters), 0, $length);
 
         $order = Order::findorFail($request->order_id)->first();
-
-
+        $payment = '';
         try {
-            $payment = Payment::where('order_id', $order->order_id)->get();
-            return redirect()->back()->with('alert', $payment);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
-        }
-        // Validasi input
-        // $request->validate([
-        // Atur aturan validasi sesuai kebutuhan            
-        // 'order_id' => 'required|exists:orders,order_id',
-        // 'user_id' => 'required|exists:users,user_id',
-        // 'event_id' => 'nullable|exists:events,event_id',
-        // 'booking_id' => 'nullable|exists:bookings,id',
-        // 'payment_method_id' => 'required|exists:payment_methods,id',
-        // 'payment_date' => 'required|date',
-        // 'payment_amount' => 'required|numeric|min:0.01',
-        // 'payment_status' => 'required|string',
-        // 'transfer_path' => 'nullable|string',
-        // 'transaction_id' => 'required|string',
-        // ...
-        // ]);
-        try {
-            $payment = Payment::create([
-                'order_id' => $order->order_id,
-                'user_id' => $order->user_id,
-                'event_id' => $order->event_id,
-                'payment_method_id' => 1,
-                'payment_date' => $order->order_date,
-                'payment_amount' => $order->total_amount,
-                'payment_status' => $order->order_status,
-                // 'transfer_path' => $request->transfer_path,
-                // 'transaction_id' => $request->transaction_id,
-            ]);
-            try {
-                $pays = new PayController();
-                $pay = $pays->store($request);
-                return redirect($pay->getTargetUrl());
-            } catch (\Exception $e) {
-                $payment->delete();
-
-                session()->flash('error', 'Pesan error');
-                return redirect()->back();
+            $payment = Payment::where('order_id', $order->order_id)->first();
+            if ($payment) {
+                $pay = Pay::where('payment_id', $payment->payment_id)->get();
+                return redirect()->back()->with('success', "Data Try :" . $payment . '\n' . $pay);
+                // return redirect()->back()->with('error', "Data Try :" . $payment);
             }
         } catch (\Exception $e) {
+            // Validasi input
+            // $request->validate([
+            // Atur aturan validasi sesuai kebutuhan            
+            // 'order_id' => 'required|exists:orders,order_id',
+            // 'user_id' => 'required|exists:users,user_id',
+            // 'event_id' => 'nullable|exists:events,event_id',
+            // 'booking_id' => 'nullable|exists:bookings,id',
+            // 'payment_method_id' => 'required|exists:payment_methods,id',
+            // 'payment_date' => 'required|date',
+            // 'payment_amount' => 'required|numeric|min:0.01',
+            // 'payment_status' => 'required|string',
+            // 'transfer_path' => 'nullable|string',
+            // 'transaction_id' => 'required|string',
+            // ...
+            // ]);
+            try {
+                $payment = Payment::create([
+                    'order_id' => $order->order_id,
+                    'user_id' => $order->user_id,
+                    'event_id' => $order->event_id,
+                    'payment_method_id' => 1,
+                    'payment_date' => $order->order_date,
+                    'payment_amount' => $order->total_amount,
+                    'payment_status' => $order->order_status,
+                    // 'transfer_path' => $request->transfer_path,
+                    // 'transaction_id' => $request->transaction_id,
+                ]);
+                try {
+                    $pays = new PayController();
+                    $pay = $pays->store($request);
 
-            session()->flash('error', 'Pesan error');
-            return redirect()->back();
+                    // session()->flash('error', 'Pesan error' . $pay);
+                    // return redirect()->back();
+                    return redirect($pay->getTargetUrl());
+                } catch (\Exception $e) {
+                    $payment->delete();
+
+                    return redirect()->back()->with('error', $e);
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', $e);
+            }
         }
         // Simpan pembayaran baru ke database  
     }

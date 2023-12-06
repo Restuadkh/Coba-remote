@@ -39,9 +39,9 @@ class OrderController extends Controller
     }
 
     public function store(Request $request)
-    {
+    { 
         // Validasi input
-        $request->validate([
+        $validator = $request->validate([
             // Atur aturan validasi sesuai kebutuhan
             'product_id' => 'required|exists:products,product_id', // Memastikan product_id ada dalam tabel products
             // 'user_id' => 'required|exists:users,user_id', // Memastikan user_id ada dalam tabel users
@@ -50,6 +50,10 @@ class OrderController extends Controller
             // 'shipping_address' => 'required|string|max:255', // Memastikan shipping_address adalah string dengan panjang maksimal 255 karakter
             // ...
         ]);
+        // if ($validator) {
+        //     return redirect()->back()->with('error', $validator);
+        // }
+
         // Simpan pesanan baru ke database
         $product = Product::findOrFail($request->product_id);
         $event = Event::findOrFail($request->event_id);

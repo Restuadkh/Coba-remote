@@ -4,16 +4,21 @@
 
 @section('content')
     <div class="container">
-        
-        <div class="col-md">
-            <h2>Daftar Pesanan</h2>
-        </div> 
 
+        @if (session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
+
+        <div class="col-md">
+            <h2>Daftar Pesanan</h2>
+        </div>
 
         <table id="Orders" class=" ">
             <thead>
@@ -32,7 +37,7 @@
                         <td>{{ $order->order_id }}</td>
                         <td>{{ $order->user->name }}</td>
                         <td>{{ $order->order_date }}</td>
-                        <td>{{ $order->total_amount }}</td> 
+                        <td>{{ $order->total_amount }}</td>
                         <td class="text-center">
                             @if ($order->order_status == 'PENDING')
                                 <div class="bg-warning p-2">{{ $order->order_status }}</div>
@@ -58,7 +63,7 @@
         <a href="{{ route('orders.create') }}" class="btn btn-success">Buat Pesanan Baru</a>
         <script>
             $(document).ready(function() {
-                new DataTable('#Orders');  
+                new DataTable('#Orders');
             });
         </script>
     </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Order;
 use App\Pay;
+use App\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -26,6 +27,7 @@ class PayController extends Controller
 
     public function store(Request $request)
     {
+        dd($request->all());
         $length = 10;
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $randomString = substr(str_shuffle($characters), 0, $length);
@@ -33,21 +35,26 @@ class PayController extends Controller
         $external_id = 'Invoice_' . $randomString;
         $amount = 0;
         $descripsi = "";
-        $order = 0;
+        $order_id = 0;
         $user = auth()->user()->user_id;
+
         if ($request->order_id) {
-            $order = Order::where('order_id', $request->order_id)
+            dd($request->order_id);
+            $order = Order::findorFail($request->order_id)
                 ->with('user')
                 ->with('product')
                 ->with('event')
                 ->first();
+            $payment = Payment::where('order_id', $order->order_id)->get();
             $user = $order->user->user_id;
             $amount = $order->total_amount;
             $order_id = $order->order_id;
             $descripsi = $order->user->name . " Order " . $order->product->product_name . " untuk " . $order->event->event_name . " di " . $order->event->location;
+            return redirect()->back()->with('error', $payment);
         } else {
             $amount = $request->biaya;
             $descripsi = "error:" . "[descripsi]:" . $request->descripsi;
+            return redirect()->back()->with('error', $descripsi);
         }
 
         try {
