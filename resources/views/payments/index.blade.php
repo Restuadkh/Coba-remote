@@ -6,14 +6,14 @@
     <div class="container">
         <div class="col-md">
             <h2>Daftar Pembayaran</h2>
-        </div> 
+        </div>
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
 
-        <table id="Payments" class="">
+        <table id="Payments" class="responsive">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -22,7 +22,7 @@
                     <th>Tanggal Pembayaran</th>
                     <th>Jumlah Pembayaran</th>
                     <th>Status Pembayaran</th>
-                    <th>Metode Pembayaran</th> 
+                    <th>Metode Pembayaran</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -35,8 +35,8 @@
                         <td>{{ $payment->payment_date }}</td>
                         <td>{{ $payment->payment_amount }}</td>
                         <td>{{ $payment->payment_status }}</td>
-                        <td>{{ $payment->payment_method->name }}</td> 
-                        <td> 
+                        <td>{{ $payment->payment_method->name }}</td>
+                        <td>
                             <a href="{{ route('payments.edit', $payment->payment_id) }}" class="btn btn-warning">Edit</a>
                             <form action="{{ route('payments.destroy', $payment->payment_id) }}" method="POST"
                                 style="display:inline">
@@ -52,7 +52,9 @@
         </table>
         <a href="{{ route('payments.create') }}" class="btn btn-success">Buat Pembayaran Baru</a>
         <script>
-            new DataTable("#Payments");
+            new DataTable('#Payments', {
+                responsive: true
+            });
         </script>
     </div>
 @endsection

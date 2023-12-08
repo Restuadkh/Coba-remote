@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Categories;
 use App\Order;
 use App\Product;
 use App\ProductPhoto;
@@ -16,6 +17,7 @@ class ProductController extends Controller
     // }
     public function index()
     {
+        $categories = Categories::all();
         $products = Product::with('photos')->get();
         return view('products.index', compact('products'));
     }
@@ -27,7 +29,9 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('products.create');
+        $categories = Categories::all();
+        $products = Product::all();
+        return view('products.create', ['products' => $products, 'categories' => $categories]);
     }
 
     /**

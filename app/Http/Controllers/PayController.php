@@ -37,54 +37,31 @@ class PayController extends Controller
         $descripsi = "";
         $order_id = 0;
         $user = auth()->user()->user_id;
-
-        if ($request->order_id) {
-            dd($request->order_id);
-            $order = Order::findorFail($request->order_id)
-                ->with('user')
-                ->with('product')
-                ->with('event')
-                ->first();
-            $payment = Payment::where('order_id', $order->order_id)->get();
-            $user = $order->user->user_id;
-            $amount = $order->total_amount;
-            $order_id = $order->order_id;
-            $descripsi = $order->user->name . " Order " . $order->product->product_name . " untuk " . $order->event->event_name . " di " . $order->event->location;
-            return redirect()->back()->with('error', $payment);
-        } else {
-            $amount = $request->biaya;
-            $descripsi = "error:" . "[descripsi]:" . $request->descripsi;
-            return redirect()->back()->with('error', $descripsi);
-        }
-
+        
+        $data_request = Http::withHeaders([
+            'Authorization' => $secret_key
+        ])->post('https://api.xendit.co/v2/invoices', [
+            'external_id' => $external_id,
+            'amount' => $amount,
+            // 'payment_methods' => [
+            //     'BCA', 'QRIS'
+            // ]
+        ]);
+        $response = $data_request->object();
         try {
-            $data_request = Http::withHeaders([
-                'Authorization' => $secret_key
-            ])->post('https://api.xendit.co/v2/invoices', [
-                'external_id' => $external_id,
-                'amount' => $amount,
-                // 'payment_methods' => [
-                //     'BCA', 'QRIS'
-                // ]
+            $expirydate = Carbon::parse($response->expiry_date);
+            $expiry_date = $expirydate->format('Y-m-d H:i:s');
+            $pay = Pay::create([
+                'user_id' => $user,
+                'order_id' => $order_id,
+                'biaya' => $amount,
+                'external_id' => $response->external_id,
+                'description' => $descripsi,
+                'status' => $response->status,
+                'pay_link' => $response->invoice_url,
+                'expiry_date' => $expiry_date,
             ]);
-            $response = $data_request->object();
-            try {
-                $expirydate = Carbon::parse($response->expiry_date);
-                $expiry_date = $expirydate->format('Y-m-d H:i:s');
-                $pay = Pay::create([
-                    'user_id' => $user,
-                    'order_id' => $order_id,
-                    'biaya' => $amount,
-                    'external_id' => $response->external_id,
-                    'description' => $descripsi,
-                    'status' => $response->status,
-                    'pay_link' => $response->invoice_url,
-                    'expiry_date' => $expiry_date,
-                ]);
-                return redirect($response->invoice_url);
-            } catch (\Exception $e) {
-                dd($e);
-            }
+            return redirect($response->invoice_url);
         } catch (\Exception $e) {
             dd($e);
         }

@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     // ... tambahkan rute lain yang memerlukan autentikasi di sini
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::resource('users', 'UserController');
+    Route::resource('categories', 'CategoryController');
     Route::resource('events', 'EventController');
     Route::resource('bookings', 'BookingController');
     Route::resource('orders', 'OrderController');
